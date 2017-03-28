@@ -314,19 +314,6 @@ fn default_hook(info: &PanicInfo) {
     #[cfg(feature = "backtrace")]
     use sys_common::backtrace;
 
-    // If this is a double panic, make sure that we print a backtrace
-    // for this panic. Otherwise only print it if logging is enabled.
-    #[cfg(feature = "backtrace")]
-    let log_backtrace = {
-        let panics = update_panic_count(0);
-
-        if panics >= 2 {
-            Some(backtrace::PrintFormat::Full)
-        } else {
-            backtrace::log_enabled()
-        }
-    };
-
     let file = info.location.file;
     let line = info.location.line;
 
@@ -346,17 +333,7 @@ fn default_hook(info: &PanicInfo) {
                          name, msg, file, line);
 
         #[cfg(feature = "backtrace")]
-        {
-            use sync::atomic::{AtomicBool, Ordering};
-
-            static FIRST_PANIC: AtomicBool = AtomicBool::new(true);
-
-            if let Some(format) = log_backtrace {
-                let _ = backtrace::print(err, format);
-            } else if FIRST_PANIC.compare_and_swap(true, false, Ordering::SeqCst) {
-                let _ = writeln!(err, "note: Run with `RUST_BACKTRACE=1` for a backtrace.");
-            }
-        }
+        let _ = backtrace::print(err, backtrace::PrintFormat::Full);
     };
 
     let prev = LOCAL_STDERR.with(|s| s.borrow_mut().take());
