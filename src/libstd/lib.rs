@@ -224,10 +224,6 @@
 // obviously, if the user has disabled jemalloc in `./configure`).
 #![cfg_attr(any(stage0, feature = "force_alloc_system"), feature(alloc_system))]
 
-// Turn warnings into errors, but only after stage0, where it can be useful for
-// code to emit warnings during language transitions
-#![deny(warnings)]
-
 // std may use features in a platform-specific way
 #![allow(unused_features)]
 
